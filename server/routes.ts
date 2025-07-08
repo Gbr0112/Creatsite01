@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertStoreSchema, insertProductSchema, insertOrderSchema } from "@shared/schema";
+import { insertStoreSchema, insertCategorySchema, insertProductSchema, insertOrderSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -64,6 +64,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/stores/access/:accessCode", async (req, res) => {
+    try {
+      const accessCode = req.params.accessCode;
+      const store = await storage.getStoreByAccessCode(accessCode);
+      if (!store) {
+        return res.status(404).json({ message: "Store not found" });
+      }
+      res.json(store);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch store" });
+    }
+  });
+
   app.post("/api/stores", async (req, res) => {
     try {
       const validatedData = insertStoreSchema.parse(req.body);
@@ -88,6 +101,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(store);
     } catch (error) {
       res.status(500).json({ message: "Failed to update store" });
+    }
+  });
+
+  // Categories
+  app.get("/api/stores/:storeId/categories", async (req, res) => {
+    try {
+      const storeId = parseInt(req.params.storeId);
+      const categories = await storage.getCategoriesByStore(storeId);
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  app.post("/api/stores/:storeId/categories", async (req, res) => {
+    try {
+      const storeId = parseInt(req.params.storeId);
+      const validatedData = insertCategorySchema.parse({
+        ...req.body,
+        storeId
+      });
+      const category = await storage.createCategory(validatedData);
+      res.json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create category" });
+    }
+  });
+
+  app.put("/api/categories/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const category = await storage.updateCategory(id, updates);
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json(category);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update category" });
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteCategory(id);
+      if (!success) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json({ message: "Category deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete category" });
     }
   });
 

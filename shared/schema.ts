@@ -25,11 +25,13 @@ export const stores = pgTable("stores", {
   templateId: integer("template_id").references(() => storeTemplates.id),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
+  accessCode: text("access_code").notNull().unique(),
   description: text("description"),
   whatsapp: text("whatsapp").notNull(),
   instagram: text("instagram"),
   email: text("email"),
   address: text("address"),
+  location: text("location"), // Google Maps location
   pixKey: text("pix_key"),
   enablePixQR: boolean("enable_pix_qr").default(false),
   config: jsonb("config").notNull(), // Store customization
@@ -37,14 +39,22 @@ export const stores = pgTable("stores", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").references(() => stores.id),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").default(0),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   storeId: integer("store_id").references(() => stores.id),
+  categoryId: integer("category_id").references(() => categories.id),
   name: text("name").notNull(),
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   imageUrl: text("image_url"),
-  category: text("category"),
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").default(0),
 });
@@ -75,6 +85,7 @@ export const analytics = pgTable("analytics", {
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertStoreTemplateSchema = createInsertSchema(storeTemplates).omit({ id: true });
 export const insertStoreSchema = createInsertSchema(stores).omit({ id: true, createdAt: true });
+export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
 export const insertAnalyticsSchema = createInsertSchema(analytics).omit({ id: true });
@@ -88,6 +99,9 @@ export type InsertStoreTemplate = z.infer<typeof insertStoreTemplateSchema>;
 
 export type Store = typeof stores.$inferSelect;
 export type InsertStore = z.infer<typeof insertStoreSchema>;
+
+export type Category = typeof categories.$inferSelect;
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;

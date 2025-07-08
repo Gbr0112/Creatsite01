@@ -1,40 +1,54 @@
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Box, PieChart, ShoppingBag, Package, TrendingUp } from "lucide-react";
+import { Box, PieChart, ShoppingBag, Package, TrendingUp, FolderOpen, Settings } from "lucide-react";
 import Dashboard from "@/components/store/dashboard";
 import Orders from "@/components/store/orders";
 import Analytics from "@/components/store/analytics";
+import AccessForm from "@/components/store/access-form";
+import CategoryManager from "@/components/store/category-manager";
+import StoreCustomization from "@/components/store/store-customization";
+import ProductManager from "@/components/store/product-manager";
 
 export default function StorePanel() {
   const [, setLocation] = useLocation();
   const { storeId } = useParams();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [storeData, setStoreData] = useState<any>(null);
+
+  const handleAccessGranted = (store: any) => {
+    setStoreData(store);
+  };
+
+  if (!storeData) {
+    return <AccessForm onAccessGranted={handleAccessGranted} />;
+  }
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: PieChart },
     { id: "orders", label: "Pedidos", icon: ShoppingBag },
+    { id: "categories", label: "Categorias", icon: FolderOpen },
     { id: "products", label: "Produtos", icon: Package },
+    { id: "customization", label: "Personalizar", icon: Settings },
     { id: "analytics", label: "Análises", icon: TrendingUp },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard storeId={storeId ? parseInt(storeId) : 1} />;
+        return <Dashboard storeId={storeData.id} />;
       case "orders":
-        return <Orders storeId={storeId ? parseInt(storeId) : 1} />;
+        return <Orders storeId={storeData.id} />;
+      case "categories":
+        return <CategoryManager storeId={storeData.id} />;
       case "products":
-        return (
-          <div className="p-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Produtos</h1>
-            <p className="text-gray-600">Gerenciamento de produtos em desenvolvimento...</p>
-          </div>
-        );
+        return <ProductManager storeId={storeData.id} />;
+      case "customization":
+        return <StoreCustomization storeId={storeData.id} />;
       case "analytics":
-        return <Analytics storeId={storeId ? parseInt(storeId) : 1} />;
+        return <Analytics storeId={storeData.id} />;
       default:
-        return <Dashboard storeId={storeId ? parseInt(storeId) : 1} />;
+        return <Dashboard storeId={storeData.id} />;
     }
   };
 
@@ -80,7 +94,7 @@ export default function StorePanel() {
         <div className="w-64 bg-white shadow-lg">
           <div className="p-6">
             <h2 className="text-lg font-semibold text-gray-800">Painel do Lojista</h2>
-            <p className="text-sm text-gray-600 mt-1">Sorveteria do João</p>
+            <p className="text-sm text-gray-600 mt-1">{storeData.name}</p>
           </div>
           <nav className="mt-6">
             {tabs.map((tab) => {
