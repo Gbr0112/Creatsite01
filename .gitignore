@@ -1,6 +1,17 @@
+# Node modules (nunca subir)
 node_modules
-dist
+
+# Output da build (ok ignorar se o build for feito no deploy)
+dist/
+
+# MacOS
 .DS_Store
+
+# Pasta pública do servidor (se não estiver sendo usada)
 server/public
-vite.config.ts.*
+
+# Arquivos temporários
 *.tar.gz
+
+# Mantém o vite.config.ts (não ignore)
+!vite.config.ts
