@@ -1,12 +1,12 @@
 {
   "name": "rest-express",
   "version": "1.0.0",
-  "type": "module",
   "license": "MIT",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
-    "build": "vite build && esbuild server/index.ts --bundle --platform=node --target=node16 --format=esm --outfile=dist/index.js --external:@babel/preset-typescript --external:lightningcss --external:../pkg",
+    "build": "vite build && node scripts/copyRedirects.js",
     "start": "cross-env NODE_ENV=production node dist/index.js",
+    "type": "module",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
@@ -97,7 +97,7 @@
     "autoprefixer": "^10.4.20",
     "cross-env": "^7.0.3",
     "drizzle-kit": "^0.30.4",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.25.6",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.1",

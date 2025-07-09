@@ -9,17 +9,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
-  plugins: [
-    react(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: "public/_redirects", // <- Esse é o arquivo de redirecionamento do Netlify
-          dest: ".",                // <- Copia para dist/client/
-        },
-      ],
-    }),
-  ],
+  // Evita erro com plugins ESM como vite-plugin-static-copy
+  ssr: {
+    noExternal: ["vite-plugin-static-copy"],
+  },
+ // plugins: [
+  //  react(),
+  //  viteStaticCopy({
+   //   targets: [
+     //   {
+        //  src: "public/_redirects", // Arquivo que o Netlify precisa para SPA
+      //    dest: ".",                // Vai para dist/client/
+      //  },
+    //  ],
+   // }),
+  //],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
